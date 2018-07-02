@@ -1,0 +1,22 @@
+{
+  "name": "ets",
+  "version": "1.0.0",
+  "description": "event track",
+  "main": "./lib/ets.js",
+  "scripts": {
+    "build": "babel src -d lib",
+    "test": "./test/index.js"
+  },
+  "keywords": [
+    "ets",
+    "wx",
+    "weixin",
+    "miniprogram"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0"
+  },
+  "author": "Ikari",
+  "license": "MIT"
+}
