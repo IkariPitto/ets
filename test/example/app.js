@@ -1,10 +1,11 @@
 var ETS = require('./ets')
+let ets = new ETS({
+  appid: 'wx334e318daed16cac',
+  eventid: 'a-0001'
+})
 App({
   onLaunch: function(options) {
-    let ets = new ETS({
-      appid: 'wx334e318daed16cac',
-      eventid: 'a-0001'
-    })
+    
     console.log(ets)
     console.log('app launch options:', options)
   },

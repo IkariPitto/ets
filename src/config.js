@@ -1,7 +1,7 @@
 module.exports = {
   appid: '',
   eventid: '',
-  api: 'https://s.mgzf.com/batch',
+  api: '',
   events: [],
   log: false
 }
