@@ -3,5 +3,5 @@ module.exports = {
   eventid: '',
   api: '',
   events: [],
-  log: false
+  debug: false
 }

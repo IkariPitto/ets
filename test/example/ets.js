@@ -103,14 +103,88 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   // Override the current require with this new one
   return newRequire;
-})({4:[function(require,module,exports) {
+})({2:[function(require,module,exports) {
 module.exports = {
   appid: '',
   eventid: '',
-  api: 'https://s.mgzf.com/batch',
+  api: '',
   events: [],
-  log: false
+  debug: false
 };
+},{}],8:[function(require,module,exports) {
+class Proxy {
+  constructor(observer) {
+    this.originApp = App;
+    this.originPage = Page;
+    this.defaultPageHandlers = {};
+    this.defaultAppHandlers = {};
+    this.lifeCircles = {
+      App: ['onLaunch', 'onShow', 'onError'],
+      Page: ['onLoad', 'onShow', 'onPullDownRefresh', 'onReachBottom', 'onShareAppMessage', 'onTabItemTap']
+    };
+    this.eventType = ['tap'];
+
+    this.observer = observer;
+    this.init();
+  }
+  hook(name, handler) {
+    var $this = this;
+    return function () {
+      var args = arguments ? arguments[0] : null;
+      if (args && args.currentTarget && $this.eventType.indexOf(args.type) >= 0) {
+        try {
+          $this.observer.trackEvents(name, args);
+        } catch (ex) {
+          console.error(ex);
+        }
+      }
+      if (this._ets_app && $this.lifeCircles.App.indexOf(name) >= 0) {
+        $this.defaultAppHandlers[name].apply(this, arguments);
+      }
+      if (this._ets_page && $this.lifeCircles.Page.indexOf(name) >= 0) {
+        $this.defaultPageHandlers[name].apply(this, arguments);
+      }
+      handler.apply(this, arguments);
+      return args;
+    };
+  }
+  intercept(args) {
+    Object.keys(args).forEach(key => {
+      if (typeof args[key] === 'function') {
+        args[key] = this.hook(key, args[key]);
+      }
+    });
+    return args;
+  }
+  ETSPage(pageArgs) {
+    pageArgs._ets_page = true;
+    this.originPage(this.intercept(pageArgs));
+  }
+  ETSApp(appArgs) {
+    appArgs._ets_app = true;
+    this.originApp(this.intercept(appArgs));
+  }
+  init() {
+    let $this = this;
+    this.lifeCircles.App.forEach(name => {
+      this.defaultAppHandlers[name] = function () {
+        $this.observer.trackAppHandlers(this, name, arguments);
+      };
+    });
+    this.lifeCircles.Page.forEach(name => {
+      this.defaultPageHandlers[name] = function () {
+        this.__route__ && $this.observer.trackPageHandlers(this, name, arguments);
+      };
+    });
+    Page = function (...args) {
+      return $this.ETSPage(args[0]);
+    };
+    App = function (...args) {
+      return $this.ETSApp(args[0]);
+    };
+  }
+}
+module.exports = Proxy;
 },{}],3:[function(require,module,exports) {
 const prefix = '_ets_';
 function getNetWorkInfo(fn) {
@@ -216,105 +290,53 @@ module.exports = {
   getRoutePath,
   getBasicInfo
 };
-},{}],11:[function(require,module,exports) {
-class Proxy {
-  constructor(observer) {
-    this.originApp = App;
-    this.originPage = Page;
-    this.defaultPageHandlers = {};
-    this.defaultAppHandlers = {};
-    this.lifeCircles = {
-      App: ['onLaunch', 'onShow', 'onError'],
-      Page: ['onLoad', 'onShow', 'onPullDownRefresh', 'onReachBottom', 'onShareAppMessage', 'onTabItemTap']
-    };
-    this.eventType = ['tap'];
-
-    this.observer = observer;
-    this.init();
-  }
-  hook(name, handler) {
-    var $this = this;
-    return function () {
-      var args = arguments ? arguments[0] : null;
-      if (args && args.currentTarget && $this.eventType.indexOf(args.type) >= 0) {
-        try {
-          $this.observer.addEventListener(name, args);
-        } catch (ex) {
-          console.error(ex);
-        }
-      }
-      handler(args);
-      return args;
-    };
-  }
-  intercept(args) {
-    Object.keys(args).forEach(key => {
-      if (typeof args[key] === 'function') {
-        args[key] = this.hook(key, args[key]);
-      }
-    });
-    return args;
-  }
-  ETSPage(pageArgs) {
-    pageArgs._ets_page = true;
-    console.log(pageArgs, 'page');
-    this.originPage(this.intercept(pageArgs));
-  }
-  ETSApp(appArgs) {
-    console.log(appArgs, 'app');
-    this.originApp(appArgs);
-  }
-  init() {
-    let $this = this;
-    Page = function (...args) {
-      return $this.ETSPage(args[0]);
-    };
-    App = function (...args) {
-      return $this.ETSApp(args[0]);
-    };
-  }
-}
-module.exports = Proxy;
-},{}],5:[function(require,module,exports) {
+},{}],4:[function(require,module,exports) {
 const Proxy = require('./proxy');
-class Observer {
-  constructor(ets) {
-    this.ets = ets;
-    this.proxy = new Proxy(this);
-    this.proxy.init();
-    //TODO
-  }
-  addEventListener(name, args) {
-    if (args.type === 'tap') {
-      this.trackTap(name);
-    }
-  }
-  addPageListener() {}
-  trackTap(name, args) {
-    console.log('track tap from ets', name, args);
-  }
-}
-module.exports = Observer;
-},{"./proxy":11}],1:[function(require,module,exports) {
-var ETS_CONFIG = require('./config');
 const util = require('./util');
-const Observer = require('./observer');
-
-class ETS {
-  constructor(options) {
-    this.$config = ETS_CONFIG;
-    this.prefix = '_ets_';
-
-    Object.assign(this.$config, options);
-    this.observer = new Observer(this);
-  }
+class Observer {
   get sid() {
     return util.getSID() || util.setSID();
   }
   get uid() {
     return util.getUID() || util.setUID();
   }
+  constructor(ets) {
+    this.ets = ets;
+    this.proxy = new Proxy(this);
+    this.proxy.init();
+    //TODO
+  }
+  trackPageHandlers(target, name, args) {
+    if (this.ets.config.debug) {
+      console.log(`%c ETS Log:%c Page.${name} %c${target.__route__}`, 'background:#f65000;color:#fff;', 'font-weight: 700;', 'color:red;');
+    }
+  }
+  trackAppHandlers(target, name, args) {
+    if (this.ets.config.debug) {
+      console.log(`%c ETS Log:%c App.${name}`, 'background:#f65000;color:#fff;', 'font-weight: 700;');
+    }
+  }
+  trackEvents(name, event) {
+    if (this.ets.config.debug) {
+      console.log(`%c ETS Log:%c bind${event.type}:${name}`, 'background:#f65000;color:#fff;', 'font-weight: 700;');
+    }
+  }
+}
+module.exports = Observer;
+},{"./proxy":8,"./util":3}],1:[function(require,module,exports) {
+var ETS_CONFIG = require('./config');
+const Observer = require('./observer');
+
+class ETS {
+  constructor(options) {
+    this.config = ETS_CONFIG;
+    this.prefix = '_ets_';
+
+    Object.assign(this.config, options);
+    this.observer = new Observer(this);
+  }
+
   init() {}
 }
 module.exports = ETS;
-},{"./config":4,"./util":3,"./observer":5}]},{},[1], null)
+},{"./config":2,"./observer":4}]},{},[1], null)

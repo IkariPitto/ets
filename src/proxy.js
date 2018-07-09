@@ -18,12 +18,18 @@ class Proxy {
       var args = arguments ? arguments[0] : null
       if (args && args.currentTarget && $this.eventType.indexOf(args.type) >= 0) {
         try {
-          $this.observer.addEventListener(name, args)
+          $this.observer.trackEvents(name, args)
         } catch (ex) {
           console.error(ex)
         }
       }
-      handler(args)
+      if (this._ets_app && $this.lifeCircles.App.indexOf(name) >= 0) {
+        $this.defaultAppHandlers[name].apply(this, arguments)
+      }
+      if (this._ets_page && $this.lifeCircles.Page.indexOf(name) >= 0) {
+        $this.defaultPageHandlers[name].apply(this, arguments)
+      }
+      handler.apply(this, arguments)
       return args
     }
   }
@@ -37,15 +43,25 @@ class Proxy {
   }
   ETSPage (pageArgs) {
     pageArgs._ets_page = true
-    console.log(pageArgs, 'page')
     this.originPage(this.intercept(pageArgs))
   }
   ETSApp (appArgs) {
-    console.log(appArgs, 'app')
-    this.originApp(appArgs)
+    appArgs._ets_app = true
+    this.originApp(this.intercept(appArgs))
+    
   }
   init () {
     let $this = this
+    this.lifeCircles.App.forEach(name => {
+      this.defaultAppHandlers[name] = function () {
+        $this.observer.trackAppHandlers(this, name, arguments)
+      }
+    })
+    this.lifeCircles.Page.forEach(name => {
+      this.defaultPageHandlers[name] = function () {
+        this.__route__ && $this.observer.trackPageHandlers(this, name, arguments)
+      }
+    })
     Page = function (...args) {
       return $this.ETSPage(args[0])
     }
