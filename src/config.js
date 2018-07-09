@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   appid: '',
   eventid: '',
   api: 'https://s.mgzf.com/batch',

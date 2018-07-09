@@ -1,5 +1,5 @@
 const prefix = '_ets_'
-export function getNetWorkInfo (fn) {
+function getNetWorkInfo (fn) {
   wx.getNetworkType({
     success: res => {
       typeof fn === 'function' && fn(res.networkType)
@@ -10,7 +10,7 @@ export function getNetWorkInfo (fn) {
   })
 }
 
-export function getSystemInfo () {
+function getSystemInfo () {
   var sys = wx.getSystemInfoSync()
   return {
     model: sys.model,
@@ -23,7 +23,7 @@ export function getSystemInfo () {
   }
 }
 
-export function setSID () {
+function setSID () {
   try {
     let sid = 's' + getRandom()
     wx.setStorageSync(prefix + 'sid', sid)
@@ -32,7 +32,7 @@ export function setSID () {
     console.error('set session id error:' + e)
   }
 }
-export function getSID () {
+function getSID () {
   try {
     return wx.getStorageSync(prefix + 'sid')
   } catch (e) {
@@ -41,7 +41,7 @@ export function getSID () {
 }
 
 
-export function setUID () {
+function setUID () {
   try {
     let uid = 'u' + getRandom()
     wx.setStorageSync(prefix + 'uid', uid)
@@ -50,7 +50,7 @@ export function setUID () {
     console.error('set user id error:' + e)
   }
 }
-export function getUID () {
+function getUID () {
   try {
     return wx.getStorageSync(prefix + 'uid')
   } catch (e) {
@@ -59,7 +59,7 @@ export function getUID () {
   }
 }
 
-export function getRandom (a) {
+function getRandom (a) {
   for (var b = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], c = 10; c > 1; c--) {
     var d = Math.floor(10 * Math.random())
     var e = b[d]
@@ -70,7 +70,7 @@ export function getRandom (a) {
   return (a || '') + (d + '' + +new Date())
 }
 
-export function getRoutePath () {
+function getRoutePath () {
   try {
     let pages = getCurrentPages()
     let path = '/'
@@ -81,7 +81,7 @@ export function getRoutePath () {
   }
 }
 
-export function getBasicInfo () {
+function getBasicInfo () {
   let system = getSystemInfo()
   getNetWorkInfo(type => {
     try {
@@ -94,4 +94,13 @@ export function getBasicInfo () {
   return {
     system
   }
+}
+
+module.exports = {
+  setSID,
+  getSID,
+  setUID,
+  getUID,
+  getRoutePath,
+  getBasicInfo
 }

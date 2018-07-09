@@ -3,7 +3,8 @@ module.exports = {
   env: {
     es6: true,
     browser: true,
-    commonjs: true
+    commonjs: true,
+    node: true
   },
   globals: {
     'wx': true,

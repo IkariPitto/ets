@@ -5,7 +5,7 @@
   "main": "./lib/ets.js",
   "scripts": {
     "build": "eslint --ext .js src/ && parcel build src/ets.js --no-source-maps -d lib/",
-    "dev": "parcel watch src/ets.js --no-source-maps -d lib/",
+    "dev": "parcel watch src/ets.js --no-source-maps --target node  -d test/example/",
     "test": "node test/index.js"
   },
   "keywords": [

@@ -1,0 +1,4 @@
+<view>
+  <navigator url="/pages/list">redirect to list</navigator>
+  <view bindtap="onTapHandler">click me</view>
+</view>
