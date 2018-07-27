@@ -43,12 +43,12 @@ class Proxy {
   }
   ETSPage (pageArgs) {
     pageArgs._ets_page = true
+    pageArgs.onLoad || (pageArgs.onLoad = function () {})
     this.originPage(this.intercept(pageArgs))
   }
   ETSApp (appArgs) {
     appArgs._ets_app = true
     this.originApp(this.intercept(appArgs))
-    
   }
   init () {
     let $this = this
@@ -59,6 +59,7 @@ class Proxy {
     })
     this.lifeCircles.Page.forEach(name => {
       this.defaultPageHandlers[name] = function () {
+        console.log(this, 'from proxy')
         this.__route__ && $this.observer.trackPageHandlers(this, name, arguments)
       }
     })

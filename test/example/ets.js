@@ -111,7 +111,7 @@ module.exports = {
   events: [],
   debug: false
 };
-},{}],8:[function(require,module,exports) {
+},{}],6:[function(require,module,exports) {
 class Proxy {
   constructor(observer) {
     this.originApp = App;
@@ -158,6 +158,7 @@ class Proxy {
   }
   ETSPage(pageArgs) {
     pageArgs._ets_page = true;
+    pageArgs.onLoad || (pageArgs.onLoad = function () {});
     this.originPage(this.intercept(pageArgs));
   }
   ETSApp(appArgs) {
@@ -173,6 +174,7 @@ class Proxy {
     });
     this.lifeCircles.Page.forEach(name => {
       this.defaultPageHandlers[name] = function () {
+        console.log(this, 'from proxy');
         this.__route__ && $this.observer.trackPageHandlers(this, name, arguments);
       };
     });
@@ -301,6 +303,8 @@ class Observer {
     return util.getUID() || util.setUID();
   }
   constructor(ets) {
+    this.sence = null;
+    this.ref = null;
     this.ets = ets;
     this.proxy = new Proxy(this);
     this.proxy.init();
@@ -308,22 +312,31 @@ class Observer {
   }
   trackPageHandlers(target, name, args) {
     if (this.ets.config.debug) {
-      console.log(`%c ETS Log:%c Page.${name} %c${target.__route__}`, 'background:#f65000;color:#fff;', 'font-weight: 700;', 'color:red;');
+      console.log('Page.' + name, target.__route__);
+    }
+    if (name === 'onLoad') {
+      // TODO
+    } else if (name === 'onShareAppMessage') {
+      // TODO
+    } else if (name === 'onTabItemTap') {
+      // TODO
+    } else if (name === 'onPullDownRefresh') {
+      // TODO
     }
   }
   trackAppHandlers(target, name, args) {
     if (this.ets.config.debug) {
-      console.log(`%c ETS Log:%c App.${name}`, 'background:#f65000;color:#fff;', 'font-weight: 700;');
+      console.log('APP.' + name);
     }
   }
   trackEvents(name, event) {
     if (this.ets.config.debug) {
-      console.log(`%c ETS Log:%c bind${event.type}:${name}`, 'background:#f65000;color:#fff;', 'font-weight: 700;');
+      console.log(`bind${event.type}:${name}`);
     }
   }
 }
 module.exports = Observer;
-},{"./proxy":8,"./util":3}],1:[function(require,module,exports) {
+},{"./proxy":6,"./util":3}],1:[function(require,module,exports) {
 var ETS_CONFIG = require('./config');
 const Observer = require('./observer');
 
@@ -335,8 +348,12 @@ class ETS {
     Object.assign(this.config, options);
     this.observer = new Observer(this);
   }
-
-  init() {}
+  setUser() {
+    // TODO:设置用户信息
+  }
+  stat() {
+    // TODO:手动收集
+  }
 }
 module.exports = ETS;
 },{"./config":2,"./observer":4}]},{},[1], null)

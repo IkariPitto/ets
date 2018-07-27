@@ -1,5 +1,5 @@
 {
-  "name": "ets",
+  "name": "wx-ets",
   "version": "1.0.0",
   "description": "event track",
   "main": "./lib/ets.js",

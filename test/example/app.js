@@ -1,12 +1,15 @@
 var ETS = require('./ets')
-let ets = new ETS({
-  appid: 'wx334e318daed16cac',
-  eventid: 'a-0001',
+new ETS({
+  appid: 'wxe90895a64b3f2658',
   debug: true
 })
+var gio = require("./gio-minp.js");
+gio('init', '82535a91f863c70f', 'wxe90895a64b3f2658', { version: '1.0' });
 App({
+  globalData: {
+    gio: gio
+  },
   onLaunch: function(options) {
-    console.log(ets)
     console.log('app launch options:', options)
   },
   onShow: function(options) {

@@ -8,6 +8,8 @@ class Observer {
     return util.getUID() || util.setUID()
   }
   constructor (ets) {
+    this.sence = null
+    this.ref = null
     this.ets = ets
     this.proxy = new Proxy(this)
     this.proxy.init()
@@ -15,18 +17,26 @@ class Observer {
   }
   trackPageHandlers (target, name, args) {
     if (this.ets.config.debug) {
-      console.log(`%c ETS Log:%c Page.${name} %c${target.__route__}`, 'background:#f65000;color:#fff;', 'font-weight: 700;', 'color:red;')
+      console.log('Page.' + name, target.__route__)
     }
-
+    if (name === 'onLoad') {
+      // TODO
+    } else if (name === 'onShareAppMessage') {
+      // TODO
+    } else if (name === 'onTabItemTap') {
+      // TODO
+    } else if (name === 'onPullDownRefresh') {
+      // TODO
+    }
   }
   trackAppHandlers (target, name, args) {
     if (this.ets.config.debug) {
-      console.log(`%c ETS Log:%c App.${name}`, 'background:#f65000;color:#fff;', 'font-weight: 700;')
+      console.log('APP.' + name)
     }
   }
   trackEvents (name, event) {
     if (this.ets.config.debug) {
-      console.log(`%c ETS Log:%c bind${event.type}:${name}`, 'background:#f65000;color:#fff;', 'font-weight: 700;')
+      console.log(`bind${event.type}:${name}`)
     }
   }
 }
